@@ -1,16 +1,67 @@
-# React + Vite
+# Appointment Record System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack Appointment Record System built with React, Node.js, Express, and MySQL.
 
-Currently, two official plugins are available:
+The application allows users to book appointments, view appointment records, update appointment status, search and filter appointments, and delete records through a clean and responsive interface.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- User login page
+- Dynamic logged-in user profile in the sidebar
+- Logout functionality
+- Book new appointments
+- View all appointments
+- Search appointments
+- Filter appointments by:
+  - All
+  - Pending
+  - Confirmed
+- Appointment status management
+- Delete appointments
+- Appointment summary:
+  - Total appointments
+  - Pending appointments
+  - Confirmed appointments
+- Form validation
+- REST API integration
+- MySQL database storage
+- Responsive design for desktop, tablet, and mobile
+- Clean sidebar navigation
+- Mobile-friendly top navigation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Appointment Fields
 
-## Expanding the ESLint configuration
+Each appointment contains:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Name
+- Email
+- Phone
+- Appointment Date
+- Reason
+- Status
+
+New appointments are created with the `PENDING` status by default.
+
+## Tech Stack
+
+### Frontend
+
+- React
+- Vite
+- React Router
+- Axios
+- React Icons
+- CSS
+
+### Backend
+
+- Node.js
+- Express.js
+- MySQL
+- mysql2
+- CORS
+- dotenv
+
+### Database
+
+- MySQL

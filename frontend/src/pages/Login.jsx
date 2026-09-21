@@ -31,6 +31,13 @@ function Login() {
     ) {
       localStorage.setItem("isLoggedIn", "true");
 
+      localStorage.setItem(
+      "loggedInUser",
+      JSON.stringify({
+        email: email,
+      })
+    );
+    
       navigate("/");
       return;
     }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import {
@@ -6,19 +7,37 @@ import {
   FiPlus,
   FiUser,
   FiLogOut,
+  FiChevronUp,
 } from "react-icons/fi";
 
 function Sidebar() {
   const navigate = useNavigate();
 
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const loggedInUser = JSON.parse(
+    localStorage.getItem("loggedInUser")
+  );
+
+  const userEmail = loggedInUser?.email || "";
+
+  const userName = userEmail
+    ? userEmail
+        .split("@")[0]
+        .replace(/[._-]/g, " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    : "User";
+
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("loggedInUser");
 
     navigate("/login");
   };
 
   return (
     <aside className="sidebar">
+
       <div className="sidebar-content">
 
         {/* Brand */}
@@ -74,44 +93,89 @@ function Sidebar() {
 
         </nav>
 
-        {/* Bottom section */}
+        {/* Sidebar Bottom */}
         <div className="sidebar-bottom">
 
-          {/* Profile */}
-          <div className="sidebar-profile">
+          {/* Profile Wrapper */}
+          <div className="profile-wrapper">
 
-            <div className="profile-avatar">
-              <FiUser />
-            </div>
+            {profileOpen && (
+              <div className="profile-menu">
 
-            <div className="profile-info">
-              <strong>
-                Admin
-              </strong>
+                <div className="profile-menu-header">
 
-              <span>
-                admin@gmail.com
-              </span>
-            </div>
+                  <div className="profile-menu-avatar">
+                    <FiUser />
+                  </div>
+
+                  <div>
+                    <strong>
+                      {userName}
+                    </strong>
+
+                    <span>
+                      {userEmail}
+                    </span>
+                  </div>
+
+                </div>
+
+                <div className="profile-menu-divider" />
+
+                <button
+                  type="button"
+                  className="profile-menu-item logout-menu-item"
+                  onClick={handleLogout}
+                >
+                  <FiLogOut />
+
+                  <span>
+                    Logout
+                  </span>
+                </button>
+
+              </div>
+            )}
+
+            {/* Profile Button */}
+            <button
+              type="button"
+              className="sidebar-profile"
+              onClick={() =>
+                setProfileOpen(!profileOpen)
+              }
+            >
+
+              <div className="profile-avatar">
+                <FiUser />
+              </div>
+
+              <div className="profile-info">
+
+                <strong>
+                  {userName}
+                </strong>
+
+                <span>
+                  {userEmail}
+                </span>
+
+              </div>
+
+              <FiChevronUp
+                className={`profile-chevron ${
+                  profileOpen ? "open" : ""
+                }`}
+              />
+
+            </button>
 
           </div>
-
-          {/* Logout */}
-          <button
-            type="button"
-            className="logout-button"
-            onClick={handleLogout}
-          >
-            <FiLogOut />
-
-            <span>
-              Logout
-            </span>
-          </button>
 
         </div>
 
       </div>
+
     </aside>
   );
 }

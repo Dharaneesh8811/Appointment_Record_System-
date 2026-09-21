@@ -10,6 +10,8 @@ import {
   FiTrash2,
   FiCheck,
   FiClock,
+  FiSearch,
+  FiX,
 } from "react-icons/fi";
 
 import {
@@ -22,6 +24,8 @@ function AppointmentList() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState("ALL");
 
   const fetchAppointments = async () => {
     try {
@@ -106,6 +110,26 @@ function AppointmentList() {
     (appointment) => appointment.status === "CONFIRMED"
   ).length;
 
+  const filteredAppointments = appointments.filter(
+    (appointment) => {
+      const search = searchTerm
+        .toLowerCase()
+        .trim();
+
+      const matchesSearch =
+        !search ||
+        appointment.name?.toLowerCase().includes(search) ||
+        appointment.email?.toLowerCase().includes(search) ||
+        appointment.phone?.toLowerCase().includes(search);
+
+      const matchesFilter =
+        activeFilter === "ALL" ||
+        appointment.status === activeFilter;
+
+      return matchesSearch && matchesFilter;
+    }
+  );
+
   return (
     <section className="list-page">
       <div className="list-container">
@@ -153,6 +177,74 @@ function AppointmentList() {
 
             <strong>{confirmedAppointments}</strong>
           </div>
+        </div>
+
+        <div className="appointment-search">
+
+          <FiSearch />
+
+          <input
+            type="text"
+            placeholder="Search by name, email or phone..."
+            value={searchTerm}
+            onChange={(e) =>
+              setSearchTerm(e.target.value)
+            }
+          />
+
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              className="clear-search"
+              aria-label="Clear search"
+            >
+              <FiX />
+            </button>
+          )}
+
+        </div>
+        
+        <div className="appointment-filters">
+
+          <button
+            type="button"
+            className={
+              activeFilter === "ALL"
+                ? "filter-button active"
+                : "filter-button"
+            }
+            onClick={() => setActiveFilter("ALL")}
+          >
+            All
+            <span>{totalAppointments}</span>
+          </button>
+
+          <button
+            type="button"
+            className={
+              activeFilter === "PENDING"
+                ? "filter-button active"
+                : "filter-button"
+            }
+            onClick={() => setActiveFilter("PENDING")}
+          >
+            Pending
+            <span>{pendingAppointments}</span>
+          </button>
+
+          <button
+            type="button"
+            className={
+              activeFilter === "CONFIRMED"
+                ? "filter-button active"
+                : "filter-button"
+            }
+            onClick={() => setActiveFilter("CONFIRMED")}
+          >
+            Confirmed
+            <span>{confirmedAppointments}</span>
+          </button>
 
         </div>
 
@@ -161,7 +253,13 @@ function AppointmentList() {
 
           {loading && (
             <div className="list-message">
-              Loading appointments...
+
+              <span className="loading-spinner"></span>
+
+              <span>
+                Loading appointments...
+              </span>
+
             </div>
           )}
 
@@ -196,7 +294,7 @@ function AppointmentList() {
             appointments.length > 0 && (
               <div className="appointment-list">
 
-                {appointments.map((appointment) => (
+                {filteredAppointments.map((appointment) => (
                   <div
                     className="appointment-item"
                     key={appointment.id}

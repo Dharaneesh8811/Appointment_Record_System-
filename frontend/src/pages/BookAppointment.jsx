@@ -51,6 +51,11 @@ function BookAppointment() {
       return;
     }
 
+    if (formData.appointment_date < getTodayDate()) {
+      setError("Please select today or a future date.");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -75,6 +80,22 @@ function BookAppointment() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getTodayDate = () => {
+    const today = new Date();
+
+    const year = today.getFullYear();
+
+    const month = String(
+      today.getMonth() + 1
+    ).padStart(2, "0");
+
+    const day = String(
+      today.getDate()
+    ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   };
 
   return (
@@ -162,6 +183,7 @@ function BookAppointment() {
                       id="appointment_date"
                       type="date"
                       name="appointment_date"
+                      min={getTodayDate()}
                       value={formData.appointment_date}
                       onChange={handleChange}
                     />
@@ -220,7 +242,17 @@ function BookAppointment() {
                 className="primary-button"
                 disabled={loading}
               >
-                {loading ? "Booking..." : "Book appointment"}
+                {loading ? (
+                  <>
+                    <span className="button-spinner"></span>
+                    Booking...
+                  </>
+                ) : (
+                  <>
+                    Book appointment
+                    {/* <FiArrowRight /> */}
+                  </>
+                )}
 
                 {!loading && <FiArrowRight />}
               </button>
