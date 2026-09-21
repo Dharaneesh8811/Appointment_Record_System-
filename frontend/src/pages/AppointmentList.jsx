@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  FiArrowLeft,
   FiCalendar,
   FiMail,
   FiPhone,
@@ -11,7 +10,8 @@ import {
   FiCheck,
   FiClock,
   FiSearch,
-  FiX,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 
 import {
@@ -24,8 +24,14 @@ function AppointmentList() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState("ALL");
+
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("ALL");
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Number of appointment cards per page
+  const appointmentsPerPage = 6;
 
   const fetchAppointments = async () => {
     try {
@@ -51,9 +57,15 @@ function AppointmentList() {
     fetchAppointments();
   }, []);
 
+  // --------------------------------------------------
+  // STATUS
+  // --------------------------------------------------
+
   const handleStatusChange = async (id, currentStatus) => {
     const newStatus =
-      currentStatus === "PENDING" ? "CONFIRMED" : "PENDING";
+      currentStatus === "PENDING"
+        ? "CONFIRMED"
+        : "PENDING";
 
     try {
       await updateAppointmentStatus(id, newStatus);
@@ -61,15 +73,23 @@ function AppointmentList() {
       setAppointments((previous) =>
         previous.map((appointment) =>
           appointment.id === id
-            ? { ...appointment, status: newStatus }
+            ? {
+                ...appointment,
+                status: newStatus,
+              }
             : appointment
         )
       );
     } catch (err) {
       console.error(err);
+
       alert("Unable to update appointment status.");
     }
   };
+
+  // --------------------------------------------------
+  // DELETE
+  // --------------------------------------------------
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm(
@@ -82,13 +102,20 @@ function AppointmentList() {
       await deleteAppointment(id);
 
       setAppointments((previous) =>
-        previous.filter((appointment) => appointment.id !== id)
+        previous.filter(
+          (appointment) => appointment.id !== id
+        )
       );
     } catch (err) {
       console.error(err);
+
       alert("Unable to delete appointment.");
     }
   };
+
+  // --------------------------------------------------
+  // DATE
+  // --------------------------------------------------
 
   const formatDate = (date) => {
     if (!date) return "-";
@@ -100,58 +127,108 @@ function AppointmentList() {
     });
   };
 
+  // --------------------------------------------------
+  // SEARCH + FILTER
+  // --------------------------------------------------
+
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter((appointment) => {
+      const searchValue = search.toLowerCase().trim();
+
+      const matchesSearch =
+        appointment.name
+          ?.toLowerCase()
+          .includes(searchValue) ||
+        appointment.email
+          ?.toLowerCase()
+          .includes(searchValue) ||
+        appointment.phone
+          ?.toLowerCase()
+          .includes(searchValue);
+
+      const matchesFilter =
+        filter === "ALL" ||
+        appointment.status === filter;
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [appointments, search, filter]);
+
+  // --------------------------------------------------
+  // PAGINATION
+  // --------------------------------------------------
+
+  const totalPages = Math.ceil(
+    filteredAppointments.length / appointmentsPerPage
+  );
+
+  const startIndex =
+    (currentPage - 1) * appointmentsPerPage;
+
+  const currentAppointments =
+    filteredAppointments.slice(
+      startIndex,
+      startIndex + appointmentsPerPage
+    );
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((previous) => previous + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((previous) => previous - 1);
+    }
+  };
+
+  // Reset page when search/filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filter]);
+
+  // --------------------------------------------------
+  // SUMMARY
+  // --------------------------------------------------
+
   const totalAppointments = appointments.length;
 
   const pendingAppointments = appointments.filter(
-    (appointment) => appointment.status === "PENDING"
+    (appointment) =>
+      appointment.status === "PENDING"
   ).length;
 
   const confirmedAppointments = appointments.filter(
-    (appointment) => appointment.status === "CONFIRMED"
+    (appointment) =>
+      appointment.status === "CONFIRMED"
   ).length;
-
-  const filteredAppointments = appointments.filter(
-    (appointment) => {
-      const search = searchTerm
-        .toLowerCase()
-        .trim();
-
-      const matchesSearch =
-        !search ||
-        appointment.name?.toLowerCase().includes(search) ||
-        appointment.email?.toLowerCase().includes(search) ||
-        appointment.phone?.toLowerCase().includes(search);
-
-      const matchesFilter =
-        activeFilter === "ALL" ||
-        appointment.status === activeFilter;
-
-      return matchesSearch && matchesFilter;
-    }
-  );
 
   return (
     <section className="list-page">
       <div className="list-container">
 
-        {/* Header */}
+        {/* HEADER */}
         <div className="list-header">
           <div>
             <span className="eyebrow">RECORDS</span>
 
-            <h1>All appointments</h1>
+            <h1>Appointments</h1>
 
             <p>
               View and manage all scheduled appointments.
             </p>
           </div>
 
-          <Link to="/" className="book-button">
-            + Book appointment
+          <Link
+            to="/book"
+            className="book-button"
+          >
+            + New appointment
           </Link>
         </div>
 
-        {/* Summary */}
+        {/* SUMMARY */}
         <div className="appointment-summary">
 
           <div className="summary-card">
@@ -159,7 +236,9 @@ function AppointmentList() {
               Total appointments
             </span>
 
-            <strong>{totalAppointments}</strong>
+            <strong>
+              {totalAppointments}
+            </strong>
           </div>
 
           <div className="summary-card">
@@ -167,7 +246,9 @@ function AppointmentList() {
               Pending
             </span>
 
-            <strong>{pendingAppointments}</strong>
+            <strong>
+              {pendingAppointments}
+            </strong>
           </div>
 
           <div className="summary-card">
@@ -175,201 +256,150 @@ function AppointmentList() {
               Confirmed
             </span>
 
-            <strong>{confirmedAppointments}</strong>
+            <strong>
+              {confirmedAppointments}
+            </strong>
           </div>
-        </div>
-
-        <div className="appointment-search">
-
-          <FiSearch />
-
-          <input
-            type="text"
-            placeholder="Search by name, email or phone..."
-            value={searchTerm}
-            onChange={(e) =>
-              setSearchTerm(e.target.value)
-            }
-          />
-
-          {searchTerm && (
-            <button
-              type="button"
-              onClick={() => setSearchTerm("")}
-              className="clear-search"
-              aria-label="Clear search"
-            >
-              <FiX />
-            </button>
-          )}
 
         </div>
-        
+
+        {/* SEARCH */}
+        <div className="appointment-toolbar">
+
+          <div className="appointment-search">
+            <FiSearch />
+
+            <input
+              type="text"
+              placeholder="Search by name, email or phone..."
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+            />
+          </div>
+
+        </div>
+
+        {/* FILTERS */}
         <div className="appointment-filters">
 
           <button
-            type="button"
             className={
-              activeFilter === "ALL"
+              filter === "ALL"
                 ? "filter-button active"
                 : "filter-button"
             }
-            onClick={() => setActiveFilter("ALL")}
+            onClick={() => setFilter("ALL")}
           >
             All
-            <span>{totalAppointments}</span>
           </button>
 
           <button
-            type="button"
             className={
-              activeFilter === "PENDING"
+              filter === "PENDING"
                 ? "filter-button active"
                 : "filter-button"
             }
-            onClick={() => setActiveFilter("PENDING")}
+            onClick={() => setFilter("PENDING")}
           >
             Pending
-            <span>{pendingAppointments}</span>
           </button>
 
           <button
-            type="button"
             className={
-              activeFilter === "CONFIRMED"
+              filter === "CONFIRMED"
                 ? "filter-button active"
                 : "filter-button"
             }
-            onClick={() => setActiveFilter("CONFIRMED")}
+            onClick={() =>
+              setFilter("CONFIRMED")
+            }
           >
             Confirmed
-            <span>{confirmedAppointments}</span>
           </button>
 
         </div>
 
-        {/* Content */}
-        <div className="appointments-card">
+        {/* CONTENT */}
+        {loading && (
+          <div className="list-message">
+            Loading appointments...
+          </div>
+        )}
 
-          {loading && (
-            <div className="list-message">
+        {!loading && error && (
+          <div className="list-message error-list">
+            {error}
+          </div>
+        )}
 
-              <span className="loading-spinner"></span>
+        {!loading &&
+          !error &&
+          filteredAppointments.length === 0 && (
+            <div className="empty-appointments">
 
-              <span>
-                Loading appointments...
-              </span>
-
-            </div>
-          )}
-
-          {!loading && error && (
-            <div className="list-message error-list">
-              {error}
-            </div>
-          )}
-
-          {!loading &&
-            !error &&
-            appointments.length === 0 && (
-              <div className="empty-appointments">
-                <div className="empty-icon">
-                  <FiCalendar />
-                </div>
-
-                <h3>No appointments yet</h3>
-
-                <p>
-                  Book your first appointment to see it here.
-                </p>
-
-                <Link to="/" className="book-button">
-                  Book appointment
-                </Link>
+              <div className="empty-icon">
+                <FiCalendar />
               </div>
-            )}
 
-          {!loading &&
-            !error &&
-            appointments.length > 0 && (
-              <div className="appointment-list">
+              <h3>
+                No appointments found
+              </h3>
 
-                {filteredAppointments.map((appointment) => (
+              <p>
+                There are no appointments matching
+                your search or filter.
+              </p>
+
+            </div>
+          )}
+
+        {/* APPOINTMENT GRID */}
+        {!loading &&
+          !error &&
+          currentAppointments.length > 0 && (
+            <div className="appointment-grid">
+
+              {currentAppointments.map(
+                (appointment) => (
                   <div
-                    className="appointment-item"
+                    className="appointment-card"
                     key={appointment.id}
                   >
-                    {/* Person */}
-                    <div className="appointment-person">
-                      <div className="person-icon">
-                        <FiUser />
+
+                    {/* CARD HEADER */}
+                    <div className="appointment-card-header">
+
+                      <div className="appointment-person">
+
+                        <div className="person-icon">
+                          <FiUser />
+                        </div>
+
+                        <div>
+                          <h3>
+                            {appointment.name}
+                          </h3>
+
+                          <span>
+                            Appointment #
+                            {appointment.id}
+                          </span>
+                        </div>
+
                       </div>
 
-                      <div>
-                        <h3>{appointment.name}</h3>
-
-                        <span>
-                          Appointment #{appointment.id}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Details */}
-                    <div className="appointment-details">
-
-                      <div className="detail-item">
-                        <FiMail />
-
-                        <span>
-                          {appointment.email}
-                        </span>
-                      </div>
-
-                      <div className="detail-item">
-                        <FiPhone />
-
-                        <span>
-                          {appointment.phone}
-                        </span>
-                      </div>
-
-                      <div className="detail-item">
-                        <FiCalendar />
-
-                        <span>
-                          {formatDate(
-                            appointment.appointment_date
-                          )}
-                        </span>
-                      </div>
-
-                      <div className="detail-item reason-item">
-                        <FiFileText />
-
-                        <span>
-                          {appointment.reason}
-                        </span>
-                      </div>
-
-                    </div>
-
-                    {/* Status + actions */}
-                    <div className="appointment-actions">
-
-                      <button
-                        className={`status-button ${
-                          appointment.status === "CONFIRMED"
+                      <span
+                        className={`appointment-status ${
+                          appointment.status ===
+                          "CONFIRMED"
                             ? "confirmed"
                             : "pending"
                         }`}
-                        onClick={() =>
-                          handleStatusChange(
-                            appointment.id,
-                            appointment.status
-                          )
-                        }
                       >
-                        {appointment.status === "CONFIRMED" ? (
+                        {appointment.status ===
+                        "CONFIRMED" ? (
                           <>
                             <FiCheck />
                             Confirmed
@@ -380,12 +410,74 @@ function AppointmentList() {
                             Pending
                           </>
                         )}
+                      </span>
+
+                    </div>
+
+                    {/* DETAILS */}
+                    <div className="appointment-card-details">
+
+                      <div className="card-detail">
+                        <FiMail />
+                        <span>
+                          {appointment.email}
+                        </span>
+                      </div>
+
+                      <div className="card-detail">
+                        <FiPhone />
+                        <span>
+                          {appointment.phone}
+                        </span>
+                      </div>
+
+                      <div className="card-detail">
+                        <FiCalendar />
+                        <span>
+                          {formatDate(
+                            appointment.appointment_date
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="card-detail reason">
+                        <FiFileText />
+                        <span>
+                          {appointment.reason}
+                        </span>
+                      </div>
+
+                    </div>
+
+                    {/* ACTIONS */}
+                    <div className="appointment-card-actions">
+
+                      <button
+                        className={`status-button ${
+                          appointment.status ===
+                          "CONFIRMED"
+                            ? "confirmed"
+                            : "pending"
+                        }`}
+                        onClick={() =>
+                          handleStatusChange(
+                            appointment.id,
+                            appointment.status
+                          )
+                        }
+                      >
+                        {appointment.status ===
+                        "CONFIRMED"
+                          ? "Set Pending"
+                          : "Confirm"}
                       </button>
 
                       <button
                         className="delete-button"
                         onClick={() =>
-                          handleDelete(appointment.id)
+                          handleDelete(
+                            appointment.id
+                          )
                         }
                         title="Delete appointment"
                       >
@@ -393,13 +485,52 @@ function AppointmentList() {
                       </button>
 
                     </div>
+
                   </div>
-                ))}
+                )
+              )}
 
+            </div>
+          )}
+
+        {/* PAGINATION */}
+        {!loading &&
+          !error &&
+          filteredAppointments.length > 0 && (
+            <div className="appointment-pagination">
+
+              <button
+                className="pagination-button"
+                disabled={currentPage === 1}
+                onClick={goToPreviousPage}
+              >
+                <FiChevronLeft />
+                Prev
+              </button>
+
+              <div className="pagination-info">
+                Page{" "}
+                <strong>{currentPage}</strong>{" "}
+                of{" "}
+                <strong>
+                  {totalPages || 1}
+                </strong>
               </div>
-            )}
 
-        </div>
+              <button
+                className="pagination-button"
+                disabled={
+                  currentPage === totalPages
+                }
+                onClick={goToNextPage}
+              >
+                Next
+                <FiChevronRight />
+              </button>
+
+            </div>
+          )}
+
       </div>
     </section>
   );

@@ -62,35 +62,15 @@ function Sidebar() {
           </span>
 
           <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive
-                ? "sidebar-link active"
-                : "sidebar-link"
-            }
-          >
-            <FiPlus />
-
-            <span>
-              Book Appointment
-            </span>
-          </NavLink>
-
-          <NavLink
             to="/appointments"
             className={({ isActive }) =>
-              isActive
-                ? "sidebar-link active"
-                : "sidebar-link"
+              isActive ? "sidebar-link active" : "sidebar-link"
             }
           >
             <FiClipboard />
-
-            <span>
-              All Appointments
-            </span>
+            <span>Appointments</span>
           </NavLink>
-
+        
         </nav>
 
         {/* Sidebar Bottom */}

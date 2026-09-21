@@ -10,6 +10,7 @@ const createAppointment = (req, res) => {
     reason,
   } = req.body;
 
+  // Basic validation
   if (!name || !email || !phone || !appointment_date || !reason) {
     return res.status(400).json({
       message: "All fields are required",

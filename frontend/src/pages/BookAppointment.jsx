@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   FiUser,
   FiMail,
   FiPhone,
   FiCalendar,
   FiFileText,
+  FiArrowLeft,
   FiArrowRight,
 } from "react-icons/fi";
 
@@ -42,8 +44,8 @@ function BookAppointment() {
     setError("");
 
     if ( !formData.name ||
-      !formData.email ||
       !formData.phone ||
+      !formData.email ||
       !formData.appointment_date ||
       !formData.reason
     ) {
@@ -101,6 +103,15 @@ function BookAppointment() {
   return (
     <section className="booking-page">
       <div className="booking-container">
+         <button
+            type="button"
+            className="booking-back-button"
+            onClick={() => navigate("/login")}
+          >
+            <FiArrowLeft />
+            <span>Back</span>
+          </button>
+          
         <div className="page-heading">
           <span className="eyebrow">APPOINTMENT</span>
 
@@ -230,30 +241,11 @@ function BookAppointment() {
 
             <div className="form-actions">
               <button
-                type="button"
-                className="secondary-button"
-                onClick={() => navigate("/appointments")}
-              >
-                View appointments
-              </button>
-
-              <button
                 type="submit"
                 className="primary-button"
                 disabled={loading}
               >
-                {loading ? (
-                  <>
-                    <span className="button-spinner"></span>
-                    Booking...
-                  </>
-                ) : (
-                  <>
-                    Book appointment
-                    {/* <FiArrowRight /> */}
-                  </>
-                )}
-
+                {loading ? "Booking..." : "Book appointment"}
                 {!loading && <FiArrowRight />}
               </button>
             </div>
