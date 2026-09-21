@@ -51,9 +51,9 @@ function Login() {
       <div className="login-card">
 
         {/* Logo */}
-        <div className="login-logo">
+        {/* <div className="login-logo">
           <FiCalendar />
-        </div>
+        </div> */}
 
         {/* Heading */}
         <div className="login-heading">
@@ -85,7 +85,7 @@ function Login() {
               Email address
             </label>
 
-            <div className="input-wrapper">
+            <div className="login-input-wrapper">
 
               <FiMail />
 
@@ -110,40 +110,23 @@ function Login() {
               Password
             </label>
 
-            <div className="input-wrapper">
-
+            <div className="login-input-wrapper password-wrapper">
               <FiLock />
 
               <input
-                id="password"
-                type={
-                  showPassword
-                    ? "text"
-                    : "password"
-                }
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
+                onChange={(e) => setPassword(e.target.value)}
               />
 
               <button
                 type="button"
                 className="password-toggle"
-                onClick={() =>
-                  setShowPassword(
-                    !showPassword
-                  )
-                }
+                onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? (
-                  <FiEyeOff />
-                ) : (
-                  <FiEye />
-                )}
+                {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
-
             </div>
 
           </div>
