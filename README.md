@@ -1,4 +1,5 @@
 Application Pages
+
 Login
 
 Users can sign in to access the appointment management system.
